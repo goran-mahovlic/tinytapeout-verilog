@@ -12,71 +12,50 @@ module user_module_341424636358034002(
 // using io_in[0] as clk
 wire clk;
 assign clk = io_in[0];
-reg [2:0] led;
-wire [2:0] led_out;
 
-assign io_out[0] = led_out[0];
-assign io_out[6] = led_out[1];
-assign io_out[7] = led_out[2];
+wire audio_l, audio_r;
 
-assign led_out = led;
+assign io_out[4:0] = audio_l;
+assign io_out[7:5] = audio_r;
 
-wire [1:0] mux;
+wire [11:0] pcm_trianglewave;
+// triangle wave generator /\/\/
+trianglewave
+#(
+  .C_delay(6) // smaller value -> higher freq
+)
+trianglewave_instance
+(
+  .clk(clk),
+  .pcm(pcm_trianglewave)
+);
 
-assign mux[0] = io_in[6];
-assign mux[1] = io_in[7];
 
-reg [4:0] uart_rx;
-reg [4:0] uart_tx;
+wire [11:0] pcm_sinewave;
+// sine wave generator ~~~~
+sinewave
+#(
+  .C_delay(10) // smaller value -> higher freq
+)
+sinewave_instance
+(
+  .clk(clk),
+  .pcm(pcm_sinewave)
+);
 
-reg [24:0] counter;
+wire [11:0] pcm = io_in[1] ? pcm_trianglewave : pcm_sinewave;
 
-wire [4:0] i_uart;
-wire [4:0] o_uart;
+// analog output to classic headphones
+wire [3:0] dac;
+dacpwm
+dacpwm_instance
+(
+  .clk(clk),
+  .pcm(pcm),
+  .dac(dac)
+);
 
-assign i_uart = uart_rx;
-assign o_uart = uart_tx;
-
-assign io_out[5:1] = o_uart[4:0];
-assign i_uart[4:0] = io_in[5:1];
-
-always @(posedge clk) begin
-
-    counter <= counter + 1;
-    led[0] <= counter[25];
-
-    case(mux)
-      2'b00 : begin
-                uart_tx[1] <= uart_rx[0];
-                uart_tx[0] <= uart_rx[1];
-                led[1] <= uart_rx[1];
-                led[2] <= uart_tx[1];
-            end
-      2'b01 : begin 
-                uart_tx[2] <= uart_rx[0];
-                uart_tx[0] <= uart_rx[2];
-                led[1] <= uart_rx[2];
-                led[2] <= uart_tx[2];                
-            end
-      2'b10 : begin 
-                uart_tx[3] <= uart_rx[0];
-                uart_tx[0] <= uart_rx[3];
-                led[1] <= uart_rx[3];
-                led[2] <= uart_tx[3];
-            end
-      2'b11 : begin
-                uart_tx[4] <= uart_rx[0];
-                uart_tx[0] <= uart_rx[4];
-                led[1] <= uart_rx[4];
-                led[2] <= uart_tx[4];
-            end
-      default : begin 
-                uart_tx[1] <= uart_rx[0];
-                uart_tx[0] <= uart_rx[1];
-                led[1] <= uart_rx[1];
-                led[2] <= uart_tx[1];
-                end
-    endcase
-end
+assign audio_l = dac;
+assign audio_r = dac;
 
 endmodule
