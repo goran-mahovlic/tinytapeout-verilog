@@ -18,19 +18,6 @@ wire audio_l, audio_r;
 assign io_out[4:0] = audio_l;
 assign io_out[7:5] = audio_r;
 
-wire [11:0] pcm_trianglewave;
-// triangle wave generator /\/\/
-trianglewave
-#(
-  .C_delay(6) // smaller value -> higher freq
-)
-trianglewave_instance
-(
-  .clk(clk),
-  .pcm(pcm_trianglewave)
-);
-
-
 wire [11:0] pcm_sinewave;
 // sine wave generator ~~~~
 sinewave
@@ -43,7 +30,7 @@ sinewave_instance
   .pcm(pcm_sinewave)
 );
 
-wire [11:0] pcm = io_in[1] ? pcm_trianglewave : pcm_sinewave;
+wire [11:0] pcm = pcm_sinewave;
 
 // analog output to classic headphones
 wire [3:0] dac;
