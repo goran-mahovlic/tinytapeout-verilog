@@ -42,7 +42,7 @@ always @(posedge clk)
                                io_in[3] ? TONE_D5-1 : 
                                io_in[2] ? TONE_F5-1 : 
                                io_in[1] ? TONE_G5-1 : 
-                               0); else counter <= counter-1;
+                               100); else counter <= counter-1;
 
 always @(posedge clk) 
     if(counter==0)
