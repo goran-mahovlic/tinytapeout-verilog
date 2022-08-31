@@ -9,7 +9,7 @@ module user_module_341424636358034002(
   output [7:0] io_out
 );
 
-// using io_in[0] as clk
+//using io_in[0] as clk
 wire clk;
 assign clk = io_in[0];
 
@@ -18,31 +18,37 @@ wire audio_l, audio_r;
 assign io_out[4:0] = audio_l;
 assign io_out[7:5] = audio_r;
 
-wire [11:0] pcm_sinewave;
-// sine wave generator ~~~~
-sinewave
-#(
-  .C_delay(10) // smaller value -> higher freq
-)
-sinewave_instance
-(
-  .clk(clk),
-  .pcm(pcm_sinewave)
-);
+parameter TONE_A4 = 25000000/440/2;
+parameter TONE_B4 = 25000000/494/2;
+parameter TONE_C5 = 25000000/523/2;
+parameter TONE_D5 = 25000000/587/2;
+parameter TONE_E5 = 25000000/659/2;
+parameter TONE_F5 = 25000000/698/2;
+parameter TONE_G5 = 25000000/783/2;
 
-wire [11:0] pcm = pcm_sinewave;
+reg [25:0] counter;
+initial 
+begin
+    audio_l = 0;
+    audio_r = 0;  
+    counter = 0;
+end
 
-// analog output to classic headphones
-wire [3:0] dac;
-dacpwm
-dacpwm_instance
-(
-  .clk(clk),
-  .pcm(pcm),
-  .dac(dac)
-);
+always @(posedge clk) 
+    if(counter==26'b0) counter <= ( io_in[7] ? TONE_A4-1 : 
+                               io_in[6] ? TONE_B4-1 : 
+                               io_in[5] ? TONE_C5-1 : 
+                               io_in[4] ? TONE_D5-1 : 
+                               io_in[3] ? TONE_D5-1 : 
+                               io_in[2] ? TONE_F5-1 : 
+                               io_in[1] ? TONE_G5-1 : 
+                               0); else counter <= counter-1;
 
-assign audio_l = dac;
-assign audio_r = dac;
+always @(posedge clk) 
+    if(counter==0)
+    begin
+        audio_l <= ~audio_l;
+        audio_r <= ~audio_r;
+    end
 
 endmodule
