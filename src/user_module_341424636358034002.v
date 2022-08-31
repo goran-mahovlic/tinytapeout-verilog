@@ -18,13 +18,13 @@ wire audio_l, audio_r;
 assign io_out[4:0] = audio_l;
 assign io_out[7:5] = audio_r;
 
-parameter TONE_A4 = 25000000/440/2;
-parameter TONE_B4 = 25000000/494/2;
-parameter TONE_C5 = 25000000/523/2;
-parameter TONE_D5 = 25000000/587/2;
-parameter TONE_E5 = 25000000/659/2;
-parameter TONE_F5 = 25000000/698/2;
-parameter TONE_G5 = 25000000/783/2;
+parameter TONE_A4 = 440/100;
+parameter TONE_B4 = 494/100;
+parameter TONE_C5 = 523/100;
+parameter TONE_D5 = 587/100;
+parameter TONE_E5 = 659/100;
+parameter TONE_F5 = 698/100;
+parameter TONE_G5 = 783/100;
 
 reg [25:0] counter;
 initial 
